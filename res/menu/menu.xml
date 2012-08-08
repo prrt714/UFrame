@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/color"
+        android:showAsAction="always"
+        android:title="@string/color">
+    </item>
+    <item
+        android:id="@+id/input"
+        android:showAsAction="always"
+        android:title="@string/input">
+    </item>
+    <item
+        android:id="@+id/run"
+        android:showAsAction="always"
+        android:title="@string/run">
+    </item>
+    <item
+        android:id="@+id/open"
+        android:showAsAction="ifRoom"
+        android:title="@string/open">
+    </item>
+    <item
+        android:id="@+id/settings"
+        android:title="@string/settings">
+    </item>
+    <item
+        android:id="@+id/fit"
+        android:checkable="true"
+        android:title="@string/fit">
+    </item>
+    <item
+        android:id="@+id/remove"
+        android:title="@string/remove">
+    </item>
+    <item
+        android:id="@+id/stop"
+        android:title="@string/stop">
+    </item>
+
+</menu>

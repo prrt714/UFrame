@@ -1,0 +1,7 @@
+<resources>
+
+    <style name="AppTheme" parent="android:Theme.Holo" />
+
+    <style name="PrefTheme" parent="android:Theme.Holo.NoActionBar" />
+
+</resources>
