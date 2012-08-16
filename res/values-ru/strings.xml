@@ -16,6 +16,8 @@
     <string name="double_tap">Шкаль насыщенность (2-касание)</string>
     <string name="emboss">Чеканка</string>
     <string name="error">ошибка</string>
+    <string name="error_copying_exif">"(ошибка при записи EXIF) "</string>
+    <string name="exif">Оставь EXIF</string>
     <string name="exists">пропускаю (уже есть)</string>
     <string name="file_name">Имя папки</string>
     <string name="files_were_deleted">" файлов удалено"</string>

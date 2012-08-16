@@ -16,6 +16,8 @@
     <string name="double_tap">Scale Saturation (2-tap)</string>
     <string name="emboss">Emboss</string>
     <string name="error">error</string>
+    <string name="error_copying_exif">"(error writing EXIF) "</string>
+    <string name="exif">Retain EXIF</string>
     <string name="exists">skip (already exists)</string>
     <string name="file_name">Folder Name</string>
     <string name="files_were_deleted">" files deleted"</string>

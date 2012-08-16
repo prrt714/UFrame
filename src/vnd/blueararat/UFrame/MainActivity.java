@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import vnd.blueararat.UFrame.SettingsDialog.OnSettingsChangedListener;
 import android.app.Activity;
@@ -28,6 +29,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.media.ExifInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -55,6 +57,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private int mBitmapWidth, mBitmapHeight;
 	private static float sStrokeWidth = 5;
 	private boolean isRainbow;
+	private boolean adjustRainbow;
 	private boolean isBlur;
 	private boolean isNone;
 	private float mCenterRainbowX;
@@ -80,6 +83,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private static volatile boolean isRunning = false;
 	private float mDx, mDy;
 	private float mStartX, mStartY, mSmooth;
+	private static boolean mustRetainExif = true;
 
 	private static float[] fitPath(float width, float height, float mDx,
 			float mDy, float mSmooth, float startX, float startY,
@@ -172,6 +176,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private final boolean lFit = mustFit;
 		private final boolean isPNG = !isJPG;
 		private final int lBackgroundColor = mBackgroundColor;
+		private final boolean lExif = mustRetainExif;
+		private ExifInterface exif;
 
 		@Override
 		protected String doInBackground(Integer... params) {
@@ -181,6 +187,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private Path drawFrameExport(Bitmap bitmap) {
 			int width = bitmap.getWidth();
 			int height = bitmap.getHeight();
+
 			// float scaleX = (float) width / mBitmapWidth;
 			scaleY = (float) height / lBitmapHeight;
 			float startX = lStartX * scaleY;
@@ -307,8 +314,15 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 					publishProgress(stop);
 					return getString(R.string.stopped);
 				}
-				if (!file.isDirectory()) {
+				if (file.isFile()) {
 					String filename = file.getName();
+					if (!isPNG && lExif && filename.endsWith("jpg")) {
+						try {
+							exif = new ExifInterface(file.getAbsolutePath());
+						} catch (IOException e) {
+							// exif = null;
+						}
+					}
 					Bitmap bitmap = BitmapFactory.decodeFile(file
 							.getAbsolutePath());// , opts
 					String str1 = exportImage(drawIntoBitmap(bitmap), filename);
@@ -368,15 +382,143 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			if (file.exists()) {
 				str = done;
 				total++;
+				if (exif != null) {
+					try {
+						ExifInterface newexif = new ExifInterface(
+								file.getAbsolutePath());
+						str = copyExif(newexif) + str;
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+					}
+					exif = null;
+				}
 			} else {
 				str = error;
 			}
 			return str;
 		}
 
+		private String copyExif(ExifInterface newexif) {
+			int i = 0;
+			String s = exif.getAttribute(ExifInterface.TAG_APERTURE);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_APERTURE, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_DATETIME);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_DATETIME, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_EXPOSURE_TIME, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_FLASH);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_FLASH, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_FOCAL_LENGTH, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_IMAGE_LENGTH, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_IMAGE_WIDTH, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_ISO);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_ISO, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_MAKE);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_MAKE, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_MODEL);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_MODEL, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_ORIENTATION, s);
+				i++;
+			}
+			s = exif.getAttribute(ExifInterface.TAG_WHITE_BALANCE);
+			if (s != null) {
+				newexif.setAttribute(ExifInterface.TAG_WHITE_BALANCE, s);
+				i++;
+			}
+			if (i > 0) {
+				try {
+					newexif.saveAttributes();
+					// return "("+i+" EXIF tags written) ";
+				} catch (Exception e) {
+					return getString(R.string.error_copying_exif);
+				}
+			}
+			return "";
+		}
+
 		@Override
 		protected void onPostExecute(String result) {
-			new SingleMediaScanner(ma, new File(lOutputPath), false);
+			new SingleMediaScanner(ma, new File(lOutputPath), false, false);
 			isRunning = false;
 			Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
 		}
@@ -417,34 +559,35 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		}
 	}
 
-	private class Remove extends AsyncTask<Integer, String, String> {
-
-		@Override
-		protected String doInBackground(Integer... params) {
-			File folder = new File(sOutputPath);
-			if (folder.exists()) {
-				File[] files = folder.listFiles(mFilenameFilter);
-				if (files != null && files.length != 0) {
-					int i = 0;
-					for (File file : files) {
-						file.delete();
-						i++;
-					}
-					return i + getString(R.string.files_were_deleted);
-				} else {
-					return getString(R.string.nothing_to_delete);
-				}
-			} else {
-				return getString(R.string.dir_doesnt_exist);
-			}
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			// new SingleMediaScanner(ma, new File(sOutputPath), false);
-			Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
-		}
-	}
+	// private class Remove extends AsyncTask<Integer, String, String> {
+	//
+	// @Override
+	// protected String doInBackground(Integer... params) {
+	// File folder = new File(sOutputPath);
+	// if (folder.exists()) {
+	// File[] files = folder.listFiles(mFilenameFilter);
+	// if (files != null && files.length != 0) {
+	// int i = 0;
+	// for (File file : files) {
+	// file.delete();// getContentResolver().delete(Uri.fromFile(file),
+	// // null, null);
+	// i++;
+	// }
+	// return i + getString(R.string.files_were_deleted);
+	// } else {
+	// return getString(R.string.nothing_to_delete);
+	// }
+	// } else {
+	// return getString(R.string.dir_doesnt_exist);
+	// }
+	// }
+	//
+	// @Override
+	// protected void onPostExecute(String result) {
+	// // new SingleMediaScanner(ma, new File(sOutputPath), false);
+	// Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
+	// }
+	// }
 
 	public class UFrameView extends View {
 
@@ -453,7 +596,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private int mNumberOfWavesX, mNumberOfWavesY;
 		private float mX, mY;
 		float sD, sMx, sMy, mSmoothInitial;
-		private boolean adjustRainbow;
 		private int mRainbowD = PADX;
 
 		public UFrameView(Context c) {
@@ -794,7 +936,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		case R.id.open:
 			File dir = new File(sOutputPath);
 			if (dir.exists()) {
-				new SingleMediaScanner(this, dir, true);
+				new SingleMediaScanner(this, dir, true, false);
 			} else {
 				Toast.makeText(this, R.string.dir_doesnt_exist,
 						Toast.LENGTH_SHORT).show();
@@ -813,11 +955,24 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 								@Override
 								public void onClick(DialogInterface dialog,
 										int which) {
-									new Remove().execute();
+									// new Remove().execute();
+									File dir = new File(sOutputPath);
+									if (dir.exists()) {
+										new SingleMediaScanner(ma, dir, false,
+												true);
+									} else {
+										Toast.makeText(
+												ma,
+												getString(R.string.dir_doesnt_exist),
+												Toast.LENGTH_SHORT).show();
+									}
 								}
 
 							}).setNegativeButton(android.R.string.no, null)
 					.show();
+			break;
+		case R.id.exif:
+			item.setChecked(mustRetainExif = !mustRetainExif);
 			break;
 		case R.id.stop:
 			mustStop = true;
@@ -833,6 +988,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		super.onPrepareOptionsMenu(menu);
+		menu.findItem(R.id.exif).setEnabled(isJPG);
+		menu.findItem(R.id.exif).setChecked(mustRetainExif);
 		menu.findItem(R.id.stop).setEnabled(isRunning);
 		menu.findItem(R.id.fit).setChecked(mustFit);
 		return true;
@@ -851,6 +1008,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	@Override
 	public void settingsChanged(int color, int mode1, int mode2,
 			float strokewidth) {
+		if (adjustRainbow)
+			adjustRainbow = false;
 		if (color != -1) {
 			mColor = color;
 			mPaint.setColor(color);
@@ -865,8 +1024,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				mColors[i] = Color.HSVToColor(f);
 			}
 			if (isRainbow) {
-				Shader s = new SweepGradient(mCenterRainbowX, mCenterRainbowY,
-						mColors, null);
+				Shader s = new SweepGradient(
+						2 * (mCenterRainbowX - mBitmapWidth / 4.f),
+						2 * (mCenterRainbowY - mBitmapHeight / 4.f), mColors,
+						null);
 				mPaint.setShader(s);
 			}
 		}

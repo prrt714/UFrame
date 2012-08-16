@@ -35,6 +35,11 @@
         android:title="@string/remove">
     </item>
     <item
+        android:id="@+id/exif"
+        android:checkable="true"
+        android:title="@string/exif">
+    </item>
+    <item
         android:id="@+id/stop"
         android:title="@string/stop">
     </item>

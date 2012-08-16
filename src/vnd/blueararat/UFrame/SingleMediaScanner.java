@@ -13,14 +13,17 @@ import android.widget.Toast;
 public class SingleMediaScanner implements MediaScannerConnectionClient {
 
 	private MediaScannerConnection mMs;
-	private File mFile;
+	private final File mFile;
 	private Context mContext;
-	private boolean mShouldOpen;
+	private final boolean mShouldOpen;
+	private final boolean mShouldRemove;
 	private volatile int i = 0;
 	private int j;
 
-	public SingleMediaScanner(Context context, File f, boolean open) {
+	public SingleMediaScanner(Context context, File f, boolean open,
+			boolean remove) {
 		mShouldOpen = open;
+		mShouldRemove = remove;
 		mContext = context;
 		mFile = f;
 		mMs = new MediaScannerConnection(context, this);
@@ -39,10 +42,14 @@ public class SingleMediaScanner implements MediaScannerConnectionClient {
 				return (filename.endsWith(".jpg") || filename.endsWith(".png"));
 			}
 		});
-		j = files.length;
+		if (files != null)
+			j = files.length;
 		if (files == null || j == 0) {
 			if (mShouldOpen) {
 				Toast.makeText(mContext, R.string.nothing_to_open,
+						Toast.LENGTH_SHORT).show();
+			} else if (mShouldRemove) {
+				Toast.makeText(mContext, R.string.nothing_to_delete,
 						Toast.LENGTH_SHORT).show();
 			}
 			return;
@@ -53,12 +60,19 @@ public class SingleMediaScanner implements MediaScannerConnectionClient {
 				mMs.scanFile(file.getAbsolutePath(), null);
 			}
 		}
-
+		if (mShouldRemove) {
+			Toast.makeText(mContext,
+					j + mContext.getString(R.string.files_were_deleted),
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override
 	public void onScanCompleted(String path, Uri uri) {
 		i++;
+		if (mShouldRemove && uri != null) {
+			mContext.getContentResolver().delete(uri, null, null);
+		}
 		if (i == j) {
 			try {
 				if (mShouldOpen && uri != null) {
