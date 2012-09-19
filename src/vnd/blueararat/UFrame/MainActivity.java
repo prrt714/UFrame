@@ -858,8 +858,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 			@Override
 			public boolean accept(File dir, String filename) {
-
-				return (filename.endsWith(".jpg") || filename.endsWith(".png"));
+				String fn = filename.toLowerCase();
+				return (fn.endsWith(".jpg") || fn.endsWith(".png") || fn.endsWith(".jpeg"));
 			}
 		};
 
