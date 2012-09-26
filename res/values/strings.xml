@@ -9,6 +9,7 @@
     <string name="cant_save_picture_to">Can\'t save picture to</string>
     <string name="cant_write_to_this_folder">can\'t write to this folder</string>
     <string name="choose_format">Picture Format</string>
+    <string name="circle">Circle</string>
     <string name="color">Color</string>
     <string name="create">Save</string>
     <string name="darkness">"Darkness "</string>

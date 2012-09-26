@@ -9,6 +9,7 @@
     <string name="cant_save_picture_to">Не могу сохранить картинки в</string>
     <string name="cant_write_to_this_folder">не могу записывать в эту папку</string>
     <string name="choose_format">Формат картинки</string>
+    <string name="circle">Круг</string>
     <string name="color">Цвет</string>
     <string name="create">Сохрани</string>
     <string name="darkness">"Темнота "</string>

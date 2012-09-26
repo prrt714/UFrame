@@ -84,12 +84,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private float mDx, mDy;
 	private float mStartX, mStartY, mSmooth;
 	private static boolean mustRetainExif = true;
+	private static boolean isCircle = true;
+	private int mNumWaves;
 
-	private static float[] fitPath(float width, float height, float mDx,
-			float mDy, float mSmooth, float startX, float startY,
-			float strokewidth, boolean none, boolean blur) {
-		float sX, sY;
-		float dx2, dy2;
+	private static float adjust(boolean none, boolean blur, float strokewidth) {
 		float adjustStrokeWidth = strokewidth / 2;
 		if (none && !blur) {
 			adjustStrokeWidth = -adjustStrokeWidth;
@@ -98,10 +96,19 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		} else if (blur) {
 			adjustStrokeWidth *= 2;
 		}
+		return adjustStrokeWidth;
+	}
+
+	private static float[] fitPath(float width, float height, float mDx,
+			float mDy, float mSmooth, float startX, float startY,
+			float strokewidth, boolean none, boolean blur) {
+		float sX, sY;
+		float dx2, dy2;
+		float adjustStrokeWidth = adjust(none, blur, strokewidth);
 		int numberOfWavesX, numberOfWavesY;
 		Path p = new Path();
 		RectF bounds = new RectF();
-		int k = 0;
+		// int k = 0;
 		do {
 			sX = startX;
 			sY = startY;
@@ -129,7 +136,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			p.computeBounds(bounds, true);
 			p.reset();
 			startY = 3 * (bounds.bottom - bounds.top) / 4 + adjustStrokeWidth;
-			k++;
+			// k++;
 
 		} while (Math.abs(sX - startX) > 0.01 || Math.abs(sY - startY) > 0.01);
 
@@ -156,7 +163,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private int mQ;
 		private float strwidth;
 		private Paint paint = new Paint(mPaint);
-		private volatile float scaleY;
+		private volatile float scaleX, scaleY;
 		private final float lStrokeWidth = sStrokeWidth;
 		private final float lDx = mDx;
 		private final float lDy = mDy;
@@ -178,6 +185,9 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private final int lBackgroundColor = mBackgroundColor;
 		private final boolean lExif = mustRetainExif;
 		private ExifInterface exif;
+		private final boolean lCircle = isCircle;
+		private final int lNumWaves = mNumWaves;
+		double dangle = 2 * Math.PI / lNumWaves;
 
 		@Override
 		protected String doInBackground(Integer... params) {
@@ -188,72 +198,122 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			int width = bitmap.getWidth();
 			int height = bitmap.getHeight();
 
-			// float scaleX = (float) width / mBitmapWidth;
+			scaleX = (float) width / lBitmapWidth;
 			scaleY = (float) height / lBitmapHeight;
-			float startX = lStartX * scaleY;
-			float startY = lStartY * scaleY;
-			float dx = lDx * scaleY;
-			float dy = lDy * scaleY;
-			float smooth = lSmooth * scaleY;
+
+			float startX, startY, dx, dy, smooth;
+
+//			if (lCircle) {
+				float scale = Math.min(width, height)
+						/ Math.min(lBitmapWidth, lBitmapHeight);
+				startX = lStartX * scaleX;
+				startY = lStartY * scaleY;
+				dx = lDx * scale;
+				dy = lDy * scale;
+				smooth = lSmooth * scale;
+				strwidth = lStrokeWidth * scale;
+//			} else {
+//				startX = lStartX * scaleY;
+//				startY = lStartY * scaleY;
+//				dx = lDx * scaleY;
+//				dy = lDy * scaleY;
+//				smooth = lSmooth * scaleY;
+//				strwidth = lStrokeWidth * scaleY;
+//			}
+
 			int numberOfWavesX, numberOfWavesY;
 			float dx2, dy2;
-			strwidth = lStrokeWidth * scaleY;
 
 			Path path = new Path();
 
 			float j = dx;
+			if (lCircle) {
+				float adj = j + adjust(lNone, lBlur, strwidth);
+				float cX = width / 2;
+				float cY = height / 2;
+				float radius = Math.min(cX, cY) - adj;
+				float x = Math.max(j, j + cX - cY) + adj;
 
-			if (lFit) {
-				float[] f = fitPath(width, height, dx, dy, smooth, startX,
-						startY, strwidth, lNone, lBlur);
-				startX = f[0];
-				startY = f[1];
-				dx2 = f[2];
-				dy2 = f[3];
-				numberOfWavesX = (int) f[4];
-				numberOfWavesY = (int) f[5];
+				if (!lFit) {
+					cX += startX;
+					cY += startY;
+					x += startX;
+				}
+
+				float y = cY;
+
+				double ang = 0;
+				path.moveTo(x, y);
+				float cos = (float) Math.cos(ang);
+				float sin = (float) Math.sin(ang);
+				float x1, x2, y1, y2;
+				for (int n = 0; n < lNumWaves; n++) {
+					x1 = x + smooth * sin;
+					y1 = y + smooth * cos;
+					ang += dangle;
+					cos = (float) Math.cos(ang);
+					sin = (float) Math.sin(ang);
+					x = cX - (radius + j) * cos;
+					y = cY + (radius + j) * sin;
+					x2 = x - smooth * sin;
+					y2 = y - smooth * cos;
+					path.cubicTo(x1, y1, x2, y2, x, y);
+					j = -j;
+				}
+				path.close();
 			} else {
-				numberOfWavesX = (int) ((width - startX * 2) / dy);
-				numberOfWavesY = (int) ((height - startY * 2) / dy);
-				if (numberOfWavesX % 2 == 0) {
-					numberOfWavesX--;
+				if (lFit) {
+					float[] f = fitPath(width, height, dx, dy, smooth, startX,
+							startY, strwidth, lNone, lBlur);
+					startX = f[0];
+					startY = f[1];
+					dx2 = f[2];
+					dy2 = f[3];
+					numberOfWavesX = (int) f[4];
+					numberOfWavesY = (int) f[5];
+				} else {
+					numberOfWavesX = (int) ((width - startX * 2) / dy);
+					numberOfWavesY = (int) ((height - startY * 2) / dy);
+					if (numberOfWavesX % 2 == 0) {
+						numberOfWavesX--;
+					}
+					if (numberOfWavesY % 2 == 0) {
+						numberOfWavesY--;
+					}
+					dx2 = ((float) width - startX * 2) / numberOfWavesX;
+					dy2 = ((float) height - startY * 2) / numberOfWavesY;
 				}
-				if (numberOfWavesY % 2 == 0) {
-					numberOfWavesY--;
-				}
-				dx2 = ((float) width - startX * 2) / numberOfWavesX;
-				dy2 = ((float) height - startY * 2) / numberOfWavesY;
-			}
 
-			float x = startX;
-			float y = startY;
-			path.moveTo(startX, startY);
-			for (int n = 1; n <= numberOfWavesY; n++) {
-				y += dy2;
-				path.cubicTo(x - j, y - dy2 / 2 - smooth, x - j, y - dy2 / 2
-						+ smooth, x, y);
+				float x = startX;
+				float y = startY;
+				path.moveTo(startX, startY);
+				for (int n = 1; n <= numberOfWavesY; n++) {
+					y += dy2;
+					path.cubicTo(x - j, y - dy2 / 2 - smooth, x - j, y - dy2
+							/ 2 + smooth, x, y);
+					j = -j;
+				}
+				for (int n = 1; n <= numberOfWavesX; n++) {
+					x += dx2;
+					path.cubicTo(x - dx2 / 2 - smooth, y - j, x - dx2 / 2
+							+ smooth, y - j, x, y);
+					j = -j;
+				}
 				j = -j;
+				for (int n = 1; n <= numberOfWavesY; n++) {
+					y -= dy2;
+					path.cubicTo(x - j, y + dy2 / 2 + smooth, x - j, y + dy2
+							/ 2 - smooth, x, y);
+					j = -j;
+				}
+				for (int n = 1; n <= numberOfWavesX; n++) {
+					x -= dx2;
+					path.cubicTo(x + dx2 / 2 + smooth, y - j, x + dx2 / 2
+							- smooth, y - j, x, y);
+					j = -j;
+				}
+				path.close();
 			}
-			for (int n = 1; n <= numberOfWavesX; n++) {
-				x += dx2;
-				path.cubicTo(x - dx2 / 2 - smooth, y - j, x - dx2 / 2 + smooth,
-						y - j, x, y);
-				j = -j;
-			}
-			j = -j;
-			for (int n = 1; n <= numberOfWavesY; n++) {
-				y -= dy2;
-				path.cubicTo(x - j, y + dy2 / 2 + smooth, x - j, y + dy2 / 2
-						- smooth, x, y);
-				j = -j;
-			}
-			for (int n = 1; n <= numberOfWavesX; n++) {
-				x -= dx2;
-				path.cubicTo(x + dx2 / 2 + smooth, y - j, x + dx2 / 2 - smooth,
-						y - j, x, y);
-				j = -j;
-			}
-			path.close();
 			return path;
 		}
 
@@ -279,8 +339,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			canvas = new Canvas(bitmap2);
 			paint.setStrokeWidth(strwidth);
 			if (lRainbow) {
-				float x = lCenterRainbowX * bitmap.getWidth() / lBitmapWidth;
-				float y = lCenterRainbowY * scaleY;
+				float x = 2 * (lCenterRainbowX - lBitmapWidth / 4.f) * scaleX;
+				float y = 2 * (lCenterRainbowY - lBitmapHeight / 4.f) * scaleY;
 				Shader s = new SweepGradient(x, y, mColors, null);
 				paint.setShader(s);
 			}
@@ -597,6 +657,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private float mX, mY;
 		float sD, sMx, sMy, mSmoothInitial;
 		private int mRainbowD = PADX;
+		private float mAdjusted;
 
 		public UFrameView(Context c) {
 			super(c);
@@ -625,61 +686,99 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			Path path = new Path();
 			float j = mDx;
 
-			if (mustFit) {
-				float[] f = fitPath(width, height, mDx, mDy, mSmooth, mStartX,
-						mStartY, sStrokeWidth, isNone, isBlur);
-				mStartX = f[0];
-				mStartY = f[1];
-				mDx2 = f[2];
-				mDy2 = f[3];
-				mNumberOfWavesX = (int) f[4];
-				mNumberOfWavesY = (int) f[5];
+			if (isCircle) {
+				mNumWaves = 2 * (int) ((width + height) / mDy);
+				mAdjusted = mDx + adjust(isNone, isBlur, sStrokeWidth);
 			} else {
-				mNumberOfWavesX = (int) ((width - mStartX * 2) / mDy);
-				mNumberOfWavesY = (int) ((height - mStartY * 2) / mDy);
+				if (mustFit) {
+					float[] f = fitPath(width, height, mDx, mDy, mSmooth,
+							mStartX, mStartY, sStrokeWidth, isNone, isBlur);
+					mStartX = f[0];
+					mStartY = f[1];
+					mDx2 = f[2];
+					mDy2 = f[3];
+					mNumberOfWavesX = (int) f[4];
+					mNumberOfWavesY = (int) f[5];
+				} else {
+					mNumberOfWavesX = (int) ((width - mStartX * 2) / mDy);
+					mNumberOfWavesY = (int) ((height - mStartY * 2) / mDy);
 
-				if (mNumberOfWavesX % 2 == 0) {
-					mNumberOfWavesX--;
+					if (mNumberOfWavesX % 2 == 0) {
+						mNumberOfWavesX--;
+					}
+					if (mNumberOfWavesY % 2 == 0) {
+						mNumberOfWavesY--;
+					}
+					mDy2 = ((float) height - mStartY * 2) / mNumberOfWavesY;
+					mDx2 = ((float) width - mStartX * 2) / mNumberOfWavesX;
 				}
-				if (mNumberOfWavesY % 2 == 0) {
-					mNumberOfWavesY--;
+			}
+			if (isCircle) {
+				float cX = width / 2;
+				float cY = height / 2;
+				float radius = Math.min(cX, cY) - mAdjusted;
+				float x = Math.max(j, j + cX - cY) + mAdjusted;
+
+				if (!mustFit) {
+					cX += mStartX;
+					cY += mStartY;
+					x += mStartX;
 				}
-				mDy2 = ((float) height - mStartY * 2) / mNumberOfWavesY;
-				mDx2 = ((float) width - mStartX * 2) / mNumberOfWavesX;
-			}
 
-			float x = mStartX;
-			float y = mStartY;
+				float y = cY;
+				double dangle = 2 * Math.PI / mNumWaves;
+				double ang = 0;
+				path.moveTo(x, y);
+				float cos = (float) Math.cos(ang);
+				float sin = (float) Math.sin(ang);
+				float x1, x2, y1, y2;
+				for (int n = 0; n < mNumWaves; n++) {
+					x1 = x + mSmooth * sin;
+					y1 = y + mSmooth * cos;
+					ang += dangle;
+					cos = (float) Math.cos(ang);
+					sin = (float) Math.sin(ang);
+					x = cX - (radius + j) * cos;
+					y = cY + (radius + j) * sin;
+					x2 = x - mSmooth * sin;
+					y2 = y - mSmooth * cos;
+					path.cubicTo(x1, y1, x2, y2, x, y);
+					j = -j;
+				}
+				path.close();
+			} else {
+				float x = mStartX;
+				float y = mStartY;
 
-			path.moveTo(mStartX, mStartY);
-			for (int n = 1; n <= mNumberOfWavesY; n++) {
-				y += mDy2;
-				path.cubicTo(x - j, y - mDy2 / 2 - mSmooth, x - j, y - mDy2 / 2
-						+ mSmooth, x, y);
+				path.moveTo(mStartX, mStartY);
+				for (int n = 1; n <= mNumberOfWavesY; n++) {
+					y += mDy2;
+					path.cubicTo(x - j, y - mDy2 / 2 - mSmooth, x - j, y - mDy2
+							/ 2 + mSmooth, x, y);
+					j = -j;
+				}
+				for (int n = 1; n <= mNumberOfWavesX; n++) {
+					x += mDx2;
+					path.cubicTo(x - mDx2 / 2 - mSmooth, y - j, x - mDx2 / 2
+							+ mSmooth, y - j, x, y);
+					j = -j;
+				}
 				j = -j;
-			}
-			for (int n = 1; n <= mNumberOfWavesX; n++) {
-				x += mDx2;
-				path.cubicTo(x - mDx2 / 2 - mSmooth, y - j, x - mDx2 / 2
-						+ mSmooth, y - j, x, y);
-				j = -j;
-			}
-			j = -j;
-			for (int n = 1; n <= mNumberOfWavesY; n++) {
-				y -= mDy2;
-				path.cubicTo(x - j, y + mDy2 / 2 + mSmooth, x - j, y + mDy2 / 2
-						- mSmooth, x, y);
-				j = -j;
-			}
-			for (int n = 1; n <= mNumberOfWavesX; n++) {
-				x -= mDx2;
-				path.cubicTo(x + mDx2 / 2 + mSmooth, y - j, x + mDx2 / 2
-						- mSmooth, y - j, x, y);
-				j = -j;
-			}
+				for (int n = 1; n <= mNumberOfWavesY; n++) {
+					y -= mDy2;
+					path.cubicTo(x - j, y + mDy2 / 2 + mSmooth, x - j, y + mDy2
+							/ 2 - mSmooth, x, y);
+					j = -j;
+				}
+				for (int n = 1; n <= mNumberOfWavesX; n++) {
+					x -= mDx2;
+					path.cubicTo(x + mDx2 / 2 + mSmooth, y - j, x + mDx2 / 2
+							- mSmooth, y - j, x, y);
+					j = -j;
+				}
 
-			path.close();
-
+				path.close();
+			}
 			return path;
 		}
 
@@ -859,7 +958,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			@Override
 			public boolean accept(File dir, String filename) {
 				String fn = filename.toLowerCase();
-				return (fn.endsWith(".jpg") || fn.endsWith(".png") || fn.endsWith(".jpeg"));
+				return (fn.endsWith(".jpg") || fn.endsWith(".png") || fn
+						.endsWith(".jpeg"));
 			}
 		};
 
@@ -981,6 +1081,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			item.setChecked(mustFit = !mustFit);
 			mv.invalidate();
 			break;
+		case R.id.circle:
+			item.setChecked(isCircle = !isCircle);
+			mv.invalidate();
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -992,6 +1096,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		menu.findItem(R.id.exif).setChecked(mustRetainExif);
 		menu.findItem(R.id.stop).setEnabled(isRunning);
 		menu.findItem(R.id.fit).setChecked(mustFit);
+		menu.findItem(R.id.circle).setChecked(isCircle);
 		return true;
 	}
 

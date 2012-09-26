@@ -31,6 +31,11 @@
         android:title="@string/fit">
     </item>
     <item
+        android:id="@+id/circle"
+        android:checkable="true"
+        android:title="@string/circle">
+    </item>
+    <item
         android:id="@+id/remove"
         android:title="@string/remove">
     </item>
