@@ -84,7 +84,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private float mDx, mDy;
 	private float mStartX, mStartY, mSmooth;
 	private static boolean mustRetainExif = true;
-	private static boolean isCircle = true;
+	private static boolean isCircle = false;
 	private int mNumWaves;
 
 	private static float adjust(boolean none, boolean blur, float strokewidth) {
