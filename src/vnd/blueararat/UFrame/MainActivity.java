@@ -203,23 +203,23 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 			float startX, startY, dx, dy, smooth;
 
-//			if (lCircle) {
-				float scale = Math.min(width, height)
-						/ Math.min(lBitmapWidth, lBitmapHeight);
-				startX = lStartX * scaleX;
-				startY = lStartY * scaleY;
-				dx = lDx * scale;
-				dy = lDy * scale;
-				smooth = lSmooth * scale;
-				strwidth = lStrokeWidth * scale;
-//			} else {
-//				startX = lStartX * scaleY;
-//				startY = lStartY * scaleY;
-//				dx = lDx * scaleY;
-//				dy = lDy * scaleY;
-//				smooth = lSmooth * scaleY;
-//				strwidth = lStrokeWidth * scaleY;
-//			}
+			// if (lCircle) {
+			float scale = Math.min(width, height)
+					/ Math.min(lBitmapWidth, lBitmapHeight);
+			startX = lStartX * scaleX;
+			startY = lStartY * scaleY;
+			dx = lDx * scale;
+			dy = lDy * scale;
+			smooth = lSmooth * scale;
+			strwidth = lStrokeWidth * scale;
+			// } else {
+			// startX = lStartX * scaleY;
+			// startY = lStartY * scaleY;
+			// dx = lDx * scaleY;
+			// dy = lDy * scaleY;
+			// smooth = lSmooth * scaleY;
+			// strwidth = lStrokeWidth * scaleY;
+			// }
 
 			int numberOfWavesX, numberOfWavesY;
 			float dx2, dy2;
@@ -383,9 +383,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 							// exif = null;
 						}
 					}
-					Bitmap bitmap = BitmapFactory.decodeFile(file
-							.getAbsolutePath());// , opts
-					String str1 = exportImage(drawIntoBitmap(bitmap), filename);
+
+					String str1 = exportImage(file, filename);
 					i++;
 					publishProgress(i + getString(R.string.of) + j + ": "
 							+ filename, str1);
@@ -401,19 +400,29 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			return getString(R.string.success);
 		}
 
-		String exportImage(Bitmap bitmap, String filename) {
+		String exportImage(File file1, String filename) {
 			// String path = preferences.getString(Prefs.KEY_FOLDER, "");
 			// if (path.equals("")) {
 			// path = Environment.getExternalStoragePublicDirectory(
 			// Environment.DIRECTORY_PICTURES).toString();
 			// }
+			File file = new File(directory, filename);
+			if (file.exists()) {
+				try {
+					Thread.sleep(30);
+				} catch (InterruptedException e) {
+					// e.printStackTrace();
+				}
+				return skip;
+			}
+
+			Bitmap bitmap = drawIntoBitmap(BitmapFactory.decodeFile(file1
+					.getAbsolutePath()));// , opts
+
 			if (!filename.endsWith(mExt)) {
 				int last_dot = filename.lastIndexOf(".");
 				filename = filename.substring(0, last_dot) + mExt;
 			}
-			File file = new File(directory, filename);
-			if (file.exists())
-				return skip;
 
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			bitmap.compress(mCf, mQ, stream);
