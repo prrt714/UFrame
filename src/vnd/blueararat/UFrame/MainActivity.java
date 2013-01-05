@@ -892,13 +892,13 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				mDx = Math.abs(mDx + dx);
 				mDy = Math.abs(mDy + dy);
 
-				if (mDy < 3) {
-					mDy = 3;
+				if (mDy < 2) {
+					mDy = 2;
 				} else {
 					mSmooth = mSmooth + dy / 2;
 				}
-				if (mDx < 3)
-					mDx = 3;
+				if (mDx < 2)
+					mDx = 2;
 				mX = x;
 				mY = y;
 			}
@@ -1094,6 +1094,13 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			item.setChecked(isCircle = !isCircle);
 			mv.invalidate();
 			break;
+		case R.id.postmark:
+			if (!mustFit && !isCircle) {
+				mStartX = 0;
+				mStartY = 0;
+				mv.invalidate();
+			}
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -1106,6 +1113,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		menu.findItem(R.id.stop).setEnabled(isRunning);
 		menu.findItem(R.id.fit).setChecked(mustFit);
 		menu.findItem(R.id.circle).setChecked(isCircle);
+		menu.findItem(R.id.postmark).setEnabled(
+				!isCircle && !mustFit && (mStartX != 0 || mStartY != 0));
 		return true;
 	}
 
