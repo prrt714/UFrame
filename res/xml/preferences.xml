@@ -25,5 +25,13 @@
             android:title="@string/background"
             android:widgetLayout="@layout/color_widget" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/tool" >
+        <Preference
+            android:key="media_scanner"
+            android:summary="@string/media_scanner_desc"
+            android:title="@string/media_scanner" >
+            <intent android:action="vnd.blueararat.UFrame.MainActivity.sendBroadcast" />
+        </Preference>
+    </PreferenceCategory>
 
 </PreferenceScreen>

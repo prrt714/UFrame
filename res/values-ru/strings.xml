@@ -27,6 +27,9 @@
     <string name="input_folder">Вход</string>
     <string name="input">Вход</string>
     <string name="jpeg_quality">JPEG сжатие</string>
+    <string name="media_scanner">Поиск медиа</string>
+    <string name="media_scanner_desc">Нажми чтобы найти новые изображения и добавить их в галерею</string>
+    <string name="media_scanning">Ищу...</string>
     <string name="menu_settings">Настройки</string>
     <string name="nnew">Новая</string>
     <string name="no_data">Нет данных</string>
@@ -54,6 +57,7 @@
     <string name="stop">Остановись</string>
     <string name="stopped">остановлено</string>
     <string name="success">UFrame: успех</string>
+    <string name="tool">Инструмент</string>
     <string name="transparency">"Прозрачность "</string>
     <string name="width">"Ширина "</string>
 

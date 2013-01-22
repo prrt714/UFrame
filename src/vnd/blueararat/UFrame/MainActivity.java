@@ -10,6 +10,7 @@ import java.io.IOException;
 import vnd.blueararat.UFrame.SettingsDialog.OnSettingsChangedListener;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -169,8 +171,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private final float lDy = mDy;
 		private final float lCenterRainbowX = mCenterRainbowX;
 		private final float lCenterRainbowY = mCenterRainbowY;
-		private final File directory = new File(sInputPath, "Framed");
-		private final String lOutputPath = sOutputPath;
+		private final File directory = new File(sOutputPath);
+		// private final String lOutputPath = sOutputPath;
 		private final float lStartX = mStartX;
 		private final float lStartY = mStartY;
 		private final float lBitmapWidth = mBitmapWidth;
@@ -443,8 +445,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				}
 			}
 
-			// new SingleMediaScanner(this, file);
-
 			byteArray = null;
 			System.gc();
 			String str;
@@ -464,6 +464,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			} else {
 				str = error;
 			}
+			new SingleMediaScanner(ma, file);
 			return str;
 		}
 
@@ -587,7 +588,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 		@Override
 		protected void onPostExecute(String result) {
-			new SingleMediaScanner(ma, new File(lOutputPath), false, false);
 			isRunning = false;
 			Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
 		}
@@ -628,35 +628,38 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		}
 	}
 
-	// private class Remove extends AsyncTask<Integer, String, String> {
-	//
-	// @Override
-	// protected String doInBackground(Integer... params) {
-	// File folder = new File(sOutputPath);
-	// if (folder.exists()) {
-	// File[] files = folder.listFiles(mFilenameFilter);
-	// if (files != null && files.length != 0) {
-	// int i = 0;
-	// for (File file : files) {
-	// file.delete();// getContentResolver().delete(Uri.fromFile(file),
-	// // null, null);
-	// i++;
-	// }
-	// return i + getString(R.string.files_were_deleted);
-	// } else {
-	// return getString(R.string.nothing_to_delete);
-	// }
-	// } else {
-	// return getString(R.string.dir_doesnt_exist);
-	// }
-	// }
-	//
-	// @Override
-	// protected void onPostExecute(String result) {
-	// // new SingleMediaScanner(ma, new File(sOutputPath), false);
-	// Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
-	// }
-	// }
+	private class Remove extends AsyncTask<Integer, String, String> {
+
+		@Override
+		protected String doInBackground(Integer... params) {
+			SingleMediaScanner.sUri = null;
+			File folder = new File(sOutputPath);
+			if (folder.exists()) {
+				File[] files = folder.listFiles(mFilenameFilter);
+				if (files != null && files.length != 0) {
+					int i = 0;
+					for (File file : files) {
+						file.delete();// getContentResolver().delete(Uri.fromFile(file),
+						// null, null);
+						i++;
+					}
+					return i + getString(R.string.files_were_deleted);
+				} else {
+					return getString(R.string.nothing_to_delete);
+				}
+			} else {
+				return getString(R.string.dir_doesnt_exist);
+			}
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+					Uri.parse("file://"
+							+ Environment.getExternalStorageDirectory())));
+			Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
+		}
+	}
 
 	public class UFrameView extends View {
 
@@ -926,7 +929,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			if (resultCode == RESULT_OK) {
 				String sFolder = data.getStringExtra(FileDialog.RESULT_PATH);
 				sInputPath = sFolder;
-				sOutputPath = new File(sInputPath, "Framed").getPath();
+				String folder_name = new File(sInputPath).getName();
+				sOutputPath = new File(sInputPath, folder_name + "-Framed")
+						.getPath();
+				SingleMediaScanner.sUri = null;
 				Editor et = preferences.edit();
 				et.putString(Prefs.KEY_FOLDER, sInputPath);
 				et.commit();
@@ -981,7 +987,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				Prefs.KEY_FOLDER,
 				Environment.getExternalStoragePublicDirectory(
 						Environment.DIRECTORY_PICTURES).toString());
-		sOutputPath = new File(sInputPath, "Framed").getPath();
+		String folder_name = new File(sInputPath).getName();
+		sOutputPath = new File(sInputPath, folder_name + "-Framed").getPath();
 
 		setContentView(R.layout.main);
 		mv = new UFrameView(this);
@@ -1045,7 +1052,19 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		case R.id.open:
 			File dir = new File(sOutputPath);
 			if (dir.exists()) {
-				new SingleMediaScanner(this, dir, true, false);
+				Uri uri = SingleMediaScanner.sUri;
+				if (uri == null) {
+					new SingleMediaScanner(this, dir);
+				} else {
+					Intent openimage = new Intent(Intent.ACTION_VIEW);
+					openimage.setData(uri);
+					try {
+						startActivity(openimage);
+					} catch (ActivityNotFoundException e) {
+						// SingleMediaScanner.sUri = null;
+						new SingleMediaScanner(this, dir);
+					}
+				}
 			} else {
 				Toast.makeText(this, R.string.dir_doesnt_exist,
 						Toast.LENGTH_SHORT).show();
@@ -1064,11 +1083,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 								@Override
 								public void onClick(DialogInterface dialog,
 										int which) {
-									// new Remove().execute();
+
 									File dir = new File(sOutputPath);
 									if (dir.exists()) {
-										new SingleMediaScanner(ma, dir, false,
-												true);
+										new Remove().execute();
 									} else {
 										Toast.makeText(
 												ma,
