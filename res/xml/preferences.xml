@@ -29,9 +29,7 @@
         <Preference
             android:key="media_scanner"
             android:summary="@string/media_scanner_desc"
-            android:title="@string/media_scanner" >
-            <intent android:action="vnd.blueararat.UFrame.MainActivity.sendBroadcast" />
-        </Preference>
+            android:title="@string/media_scanner" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="vnd.blueararat.UFrame"
-    android:versionCode="9"
-    android:versionName="1.0.7" >
+    android:versionCode="10"
+    android:versionName="1.0.7b" >
 
     <uses-sdk
         android:minSdkVersion="10"
