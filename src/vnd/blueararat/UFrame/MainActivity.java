@@ -338,7 +338,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			bitmap.recycle();
 			System.gc();
 			System.gc();
-			canvas = new Canvas(bitmap2);
+
 			paint.setStrokeWidth(strwidth);
 			if (lRainbow) {
 				float x = 2 * (lCenterRainbowX - lBitmapWidth / 4.f) * scaleX;
@@ -355,6 +355,14 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 						new float[] { 1, 1, 1 }, 0.4f, 6, 3.5f * scaleY);
 				paint.setMaskFilter(emboss);
 			}
+
+			if (lStartX == 0 && lStartY == 0 && !lCircle) {
+				float p = strwidth / 2;
+				canvas.drawRect(p, p, bitmap.getWidth() - p, bitmap.getHeight()
+						- p, paint);
+			}
+			
+			canvas = new Canvas(bitmap2);
 			canvas.drawPath(path, paint);
 			return bitmap2;
 		}
@@ -378,7 +386,9 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				}
 				if (file.isFile()) {
 					String filename = file.getName();
-					if (!isPNG && lExif && filename.endsWith("jpg")) {
+					String fn = filename.toLowerCase();
+					if (!isPNG && lExif
+							&& (fn.endsWith("jpg") || fn.endsWith("jpeg"))) {
 						try {
 							exif = new ExifInterface(file.getAbsolutePath());
 						} catch (IOException e) {
@@ -408,6 +418,16 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			// path = Environment.getExternalStoragePublicDirectory(
 			// Environment.DIRECTORY_PICTURES).toString();
 			// }
+
+			Bitmap bitmap = drawIntoBitmap(BitmapFactory.decodeFile(file1
+					.getAbsolutePath()));// , opts
+
+			String fn = filename.toLowerCase();
+			if (!fn.endsWith(mExt)) {
+				int last_dot = filename.lastIndexOf(".");
+				filename = filename.substring(0, last_dot) + mExt;
+			}
+
 			File file = new File(directory, filename);
 			if (file.exists()) {
 				try {
@@ -416,14 +436,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 					// e.printStackTrace();
 				}
 				return skip;
-			}
-
-			Bitmap bitmap = drawIntoBitmap(BitmapFactory.decodeFile(file1
-					.getAbsolutePath()));// , opts
-
-			if (!filename.endsWith(mExt)) {
-				int last_dot = filename.lastIndexOf(".");
-				filename = filename.substring(0, last_dot) + mExt;
 			}
 
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -807,6 +819,16 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 			canvas2.clipPath(path);
 			canvas2.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
+
+			if (mStartX == 0 && mStartY == 0 && !isCircle) {
+				float p = sStrokeWidth / 2;
+				canvas2.drawRect(p, p, mBitmapWidth - p, mBitmapHeight - p,
+						mPaint);
+				Path pt = new Path();
+				pt.addRect(PADX, PADX, mBitmapWidth+PADX, mBitmapHeight+PADX,Path.Direction.CW);
+				canvas.clipPath(pt);
+			}
+			
 			canvas.drawBitmap(bitmap, PADX, PADX, mBitmapPaint);
 			// if (!isNone || isBlur) {
 			canvas.translate(PADX, PADX);
@@ -823,6 +845,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 						2 * (mCenterRainbowY - mBitmapHeight / 4.f), 5, mPaint);
 				canvas.translate(-PADX, -PADX);
 			}
+			
 			canvas.drawRect(PADX, PADX, mBckgrWidth - PADX,
 					mBckgrHeight - PADX, mPaint5);
 		}
