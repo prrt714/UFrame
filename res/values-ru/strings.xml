@@ -2,6 +2,7 @@
 
     <string name="app_name">UFrame</string>
     <string name="are_you_sure_remove">"Уверены что хотите удалить картинки из "</string>
+    <string name="are_you_sure_remove_last">"Удалить последние картинки из "</string>
     <string name="are_you_sure_run">"Уверены что хотите обрамить картинки в каталоге "</string>
     <string name="background">Цвет фона</string>
     <string name="blur">Размытие</string>
@@ -47,6 +48,7 @@
     <string name="postmark">Почтовая марка</string>
     <string name="rainbow">Радуга</string>
     <string name="remove">Удали</string>
+    <string name="remove_last">Удали последние</string>
     <string name="run">Пуск</string>
     <string name="saturation">"Насыщенность "</string>
     <string name="save_format">Формат сохранения</string>

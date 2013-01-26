@@ -2,6 +2,7 @@
 
     <string name="app_name">UFrame</string>
     <string name="are_you_sure_remove">"Are you sure you want to remove pictures from "</string>
+    <string name="are_you_sure_remove_last">"Remove last pictures from "</string>
     <string name="are_you_sure_run">"Are you sure you want to frame pictures located at "</string>
     <string name="background">Background color</string>
     <string name="blur">Blur</string>
@@ -47,6 +48,7 @@
     <string name="postmark">Postmark</string>
     <string name="rainbow">Rainbow</string>
     <string name="remove">Remove</string>
+    <string name="remove_last">Remove last</string>
     <string name="run">Run</string>
     <string name="saturation">"Saturation "</string>
     <string name="save_format">Save Format</string>

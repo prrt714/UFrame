@@ -88,6 +88,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private static boolean mustRetainExif = true;
 	private static boolean isCircle = false;
 	private int mNumWaves;
+	private static long lastTime = System.currentTimeMillis();
 
 	private static float adjust(boolean none, boolean blur, float strokewidth) {
 		float adjustStrokeWidth = strokewidth / 2;
@@ -361,7 +362,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				canvas.drawRect(p, p, bitmap.getWidth() - p, bitmap.getHeight()
 						- p, paint);
 			}
-			
+
 			canvas = new Canvas(bitmap2);
 			canvas.drawPath(path, paint);
 			return bitmap2;
@@ -640,20 +641,29 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		}
 	}
 
-	private class Remove extends AsyncTask<Integer, String, String> {
+	private class Remove extends AsyncTask<Boolean, String, String> {
 
 		@Override
-		protected String doInBackground(Integer... params) {
+		protected String doInBackground(Boolean... params) {
 			SingleMediaScanner.sUri = null;
 			File folder = new File(sOutputPath);
 			if (folder.exists()) {
 				File[] files = folder.listFiles(mFilenameFilter);
 				if (files != null && files.length != 0) {
 					int i = 0;
-					for (File file : files) {
-						file.delete();// getContentResolver().delete(Uri.fromFile(file),
-						// null, null);
-						i++;
+					if (params[0]) {
+						for (File file : files) {
+							if (file.lastModified() > lastTime) {
+								file.delete();// getContentResolver().delete(Uri.fromFile(file),
+								// null, null);
+								i++;
+							}
+						}
+					} else {
+						for (File file : files) {
+							file.delete();
+							i++;
+						}
 					}
 					return i + getString(R.string.files_were_deleted);
 				} else {
@@ -825,10 +835,11 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				canvas2.drawRect(p, p, mBitmapWidth - p, mBitmapHeight - p,
 						mPaint);
 				Path pt = new Path();
-				pt.addRect(PADX, PADX, mBitmapWidth+PADX, mBitmapHeight+PADX,Path.Direction.CW);
+				pt.addRect(PADX, PADX, mBitmapWidth + PADX, mBitmapHeight
+						+ PADX, Path.Direction.CW);
 				canvas.clipPath(pt);
 			}
-			
+
 			canvas.drawBitmap(bitmap, PADX, PADX, mBitmapPaint);
 			// if (!isNone || isBlur) {
 			canvas.translate(PADX, PADX);
@@ -845,7 +856,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 						2 * (mCenterRainbowY - mBitmapHeight / 4.f), 5, mPaint);
 				canvas.translate(-PADX, -PADX);
 			}
-			
+
 			canvas.drawRect(PADX, PADX, mBckgrWidth - PADX,
 					mBckgrHeight - PADX, mPaint5);
 		}
@@ -1109,7 +1120,35 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 									File dir = new File(sOutputPath);
 									if (dir.exists()) {
-										new Remove().execute();
+										new Remove().execute(false);
+									} else {
+										Toast.makeText(
+												ma,
+												getString(R.string.dir_doesnt_exist),
+												Toast.LENGTH_SHORT).show();
+									}
+								}
+
+							}).setNegativeButton(android.R.string.no, null)
+					.show();
+			break;
+		case R.id.removeLast:
+			new AlertDialog.Builder(this)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					// .setTitle("")
+					.setMessage(
+							getString(R.string.are_you_sure_remove_last)
+									+ sOutputPath + " ?")
+					.setPositiveButton(android.R.string.yes,
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+
+									File dir = new File(sOutputPath);
+									if (dir.exists()) {
+										new Remove().execute(true);
 									} else {
 										Toast.makeText(
 												ma,
@@ -1129,6 +1168,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			break;
 		case R.id.fit:
 			item.setChecked(mustFit = !mustFit);
+			// Toast.makeText(this, lastTime + "", 0).show();
 			mv.invalidate();
 			break;
 		case R.id.circle:

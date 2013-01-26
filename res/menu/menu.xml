@@ -26,6 +26,10 @@
         android:title="@string/remove">
     </item>
     <item
+        android:id="@+id/removeLast"
+        android:title="@string/remove_last">
+    </item>
+    <item
         android:id="@+id/fit"
         android:checkable="true"
         android:title="@string/fit">
