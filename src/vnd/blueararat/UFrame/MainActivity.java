@@ -365,6 +365,23 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 			canvas = new Canvas(bitmap2);
 			canvas.drawPath(path, paint);
+
+			if (isCircle && lFit) {
+				int l = 0, u = 0, dr;
+				int w = bitmap2.getWidth();
+				int h = bitmap2.getHeight();
+				if (w > h) {
+					l = (w - h) / 2;
+					dr = h;
+				} else if (w < h) {
+					u = (h - w) / 2;
+					dr = w;
+				} else {
+					return bitmap2;
+				}
+				bitmap2 = Bitmap.createBitmap(bitmap2, l, u, dr, dr);
+			}
+
 			return bitmap2;
 		}
 
