@@ -405,8 +405,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				if (file.isFile()) {
 					String filename = file.getName();
 					String fn = filename.toLowerCase();
-					if (!isPNG && lExif
-							&& (fn.endsWith("jpg") || fn.endsWith("jpeg"))) {
+					if (!isPNG && lExif && (!fn.endsWith("png"))) {
 						try {
 							exif = new ExifInterface(file.getAbsolutePath());
 						} catch (IOException e) {
@@ -437,9 +436,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			// Environment.DIRECTORY_PICTURES).toString();
 			// }
 
-			Bitmap bitmap = drawIntoBitmap(BitmapFactory.decodeFile(file1
-					.getAbsolutePath()));// , opts
-
 			String fn = filename.toLowerCase();
 			if (!fn.endsWith(mExt)) {
 				int last_dot = filename.lastIndexOf(".");
@@ -455,6 +451,9 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				}
 				return skip;
 			}
+
+			Bitmap bitmap = drawIntoBitmap(BitmapFactory.decodeFile(file1
+					.getAbsolutePath()));// , opts
 
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			bitmap.compress(mCf, mQ, stream);
