@@ -58,7 +58,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private MaskFilter mBlur;
 	private UFrameView mv;
 	private MainActivity ma;
-	private static int mColor = 0xFFAAAAAA;
+	private static int mColor = 0xFFAAAAFA;
 	private int mBckgrWidth, mBckgrHeight;
 	private int mBitmapWidth, mBitmapHeight;
 	private static float sStrokeWidth = 5;
@@ -1459,6 +1459,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		case SettingsDialog.RAINBOW:
 			mPaint.setXfermode(null);
 			if (!isRainbow) {
+				if (mColors[0] == mColors[2]) {
+					mColors = new int[] { 0xFFFF0000, 0xFFFF00FF, 0xFF0000FF,
+							0xFF00FFFF, 0xFF00FF00, 0xFFFFFF00, 0xFFFF0000 };
+				}
 				mCenterRainbowX = mBckgrWidth / 2 - PADX;
 				mCenterRainbowY = mBckgrHeight / 2 - PADX;
 				Shader s = new SweepGradient(mCenterRainbowX, mCenterRainbowY,

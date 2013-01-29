@@ -7,14 +7,12 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.util.AttributeSet;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -45,7 +43,6 @@ public class ColorPickerView extends View {
 		mColors = new int[] { 0xFFFF0000, 0xFFFF00FF, 0xFF0000FF, 0xFF00FFFF,
 				0xFF00FF00, 0xFFFFFF00, 0xFFFF0000 };
 		final Shader s = new SweepGradient(0, 0, mColors, null);
-		Log.e("899", "" + context);
 
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG) {
 			{
