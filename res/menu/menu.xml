@@ -49,6 +49,20 @@
         android:title="@string/exif">
     </item>
     <item
+        android:id="@+id/should_draw_text"
+        android:checkable="true"
+        android:title="@string/add_text">
+    </item>
+    <item
+        android:id="@+id/fill_with_text"
+        android:checkable="true"
+        android:title="@string/fill_with_text">
+    </item>
+    <item
+        android:id="@+id/edit_text"
+        android:title="@string/edit_text">
+    </item>
+    <item
         android:id="@+id/settings"
         android:title="@string/settings">
     </item>

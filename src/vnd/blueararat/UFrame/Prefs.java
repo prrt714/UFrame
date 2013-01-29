@@ -1,5 +1,7 @@
 package vnd.blueararat.UFrame;
 
+import java.io.File;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -16,10 +18,12 @@ public class Prefs extends PreferenceActivity implements
 		OnSharedPreferenceChangeListener {
 
 	static final String KEY_FOLDER = "save_location";
-	static final int SELECT_FOLDER = 4;
+	static final String KEY_FONT = "font";
+	static final int SELECT_FILE = 1;
 	private SeekbarPref mSeekbarPrefJ;
 	private ColorPref mColorPref;
 	private ListPreference mSaveFormat;
+	private FontPref mPrefFont;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,48 @@ public class Prefs extends PreferenceActivity implements
 						return true;
 					}
 				});
+		mPrefFont = (FontPref) findPreference(KEY_FONT);
+		mPrefFont.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				Intent intent = new Intent(getBaseContext(), FileDialog.class);
+				File f = new File(mPrefFont.getString());
+				if (f != null && f.getParentFile() != null
+						&& f.getParentFile().exists()) {
+					intent.putExtra(FileDialog.START_PATH, f.getParent());
+				} else {
+					String sf = "/sdcard/Fonts";
+					f = new File(sf);
+					if (f.exists()) {
+						intent.putExtra(FileDialog.START_PATH, sf);
+					} else {
+						intent.putExtra(FileDialog.START_PATH, "/sdcard");
+					}
+				}
+				intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
+				intent.putExtra(FileDialog.SELECTION_MODE,
+						SelectionMode.MODE_OPEN);
+				intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { "ttf",
+						"otf" });
+				startActivityForResult(intent, SELECT_FILE);
+				return true;
+			}
+		});
+		if (mPrefFont.getString().length() == 0)
+			mPrefFont.setSummary(R.string.font_select);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (requestCode == SELECT_FILE) {
+			if (resultCode == RESULT_OK) {
+				String sFile = data.getStringExtra(FileDialog.RESULT_PATH);
+				mPrefFont.setString(sFile);
+				MainActivity.setTypeface(sFile);
+			}
+		}
 	}
 
 	private void searchMedia() {

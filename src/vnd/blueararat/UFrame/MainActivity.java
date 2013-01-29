@@ -25,11 +25,14 @@ import android.graphics.EmbossMaskFilter;
 import android.graphics.MaskFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.graphics.Typeface;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -43,18 +46,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnSettingsChangedListener {
 
-	private Paint mPaint, mPaint5, mBitmapPaint;
+	private Paint mPaint, mPaint5, mBitmapPaint, mTextPaint;
 	private MaskFilter mEmboss;
 	private MaskFilter mBlur;
 	private UFrameView mv;
 	private MainActivity ma;
-	private static int mColor = 0xFFFF7777;
+	private static int mColor = 0xFFAAAAAA;
 	private int mBckgrWidth, mBckgrHeight;
 	private int mBitmapWidth, mBitmapHeight;
 	private static float sStrokeWidth = 5;
@@ -89,6 +93,26 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 	private static boolean isCircle = false;
 	private int mNumWaves;
 	private static long lastTime = System.currentTimeMillis();
+	private static boolean shouldDrawText = true;
+	private float[] dt = new float[] { 0, 0 };
+	private boolean adjustTextPosition = false;
+	private float pathLength = 0;
+	private float currentLength = 0;
+	private static String sText = "";
+	private static boolean fillWithText = true;
+	private static Typeface font;
+
+	static void setTypeface(String path) {
+		if (path == null || path.length() == 0) {
+			font = null;
+		} else {
+			try {
+				font = Typeface.createFromFile(new File(path));
+			} catch (Exception e) {
+				font = null;
+			}
+		}
+	}
 
 	private static float adjust(boolean none, boolean blur, float strokewidth) {
 		float adjustStrokeWidth = strokewidth / 2;
@@ -191,6 +215,24 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		private final boolean lCircle = isCircle;
 		private final int lNumWaves = mNumWaves;
 		double dangle = 2 * Math.PI / lNumWaves;
+
+		private final Paint lTextPaint = new Paint(mTextPaint);
+		private final String lText = sText;
+		private final boolean lShouldDrawText = shouldDrawText;
+		private final float lPathLength = pathLength;
+		private float pLength, cLength;
+		private final float lCurrentLength = currentLength;
+		private final boolean lFillWithText = fillWithText;
+		private float ladj1;
+		private int ltw;
+
+		private void lUpdateTextBounds() {
+			Rect bounds = new Rect();
+			lTextPaint
+					.getTextBounds(sText + ".", 0, sText.length() + 1, bounds);
+			ltw = bounds.right;
+			ladj1 = -(bounds.bottom + bounds.top) / 2;
+		}
 
 		@Override
 		protected String doInBackground(Integer... params) {
@@ -365,6 +407,25 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 			canvas = new Canvas(bitmap2);
 			canvas.drawPath(path, paint);
+
+			if (lShouldDrawText) {
+				PathMeasure pm = new PathMeasure(path, true);
+				pLength = pm.getLength();
+				cLength = pLength * lCurrentLength / lPathLength;
+				lTextPaint.setTextSize(strwidth);
+				lUpdateTextBounds();
+
+				if (lFillWithText) {
+					int count = (int) pLength / ltw;
+					for (int i = 0; i < count; i++) {
+						canvas.drawTextOnPath(sText, path, cLength + i * ltw,
+								ladj1, lTextPaint);
+					}
+				} else {
+					canvas.drawTextOnPath(sText, path, cLength, ladj1,
+							lTextPaint);
+				}
+			}
 
 			if (isCircle && lFit) {
 				int l = 0, u = 0, dr;
@@ -703,14 +764,16 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 		private Bitmap mBitmap;
 		private float mDy2, mDx2;
-		private int mNumberOfWavesX, mNumberOfWavesY;
-		private float mX, mY;
+		private int mNumberOfWavesX, mNumberOfWavesY, tw;
+		private float mX, mY, adj1;
 		float sD, sMx, sMy, mSmoothInitial;
 		private int mRainbowD = PADX;
 		private float mAdjusted;
+		private Paint mDotPaint = new Paint();
 
 		public UFrameView(Context c) {
 			super(c);
+			mDotPaint.setColor(Color.RED);
 		}
 
 		private void drawBackgroundBitmap() {
@@ -860,8 +923,28 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			// if (!isNone || isBlur) {
 			canvas.translate(PADX, PADX);
 			canvas.drawPath(path, mPaint);
+			if (shouldDrawText) {
+				PathMeasure pm = new PathMeasure(path, true);
+				pathLength = pm.getLength();
+
+				if (fillWithText) {
+					int count = (int) pathLength / tw;
+					for (int i = 0; i < count; i++) {
+						canvas.drawTextOnPath(sText, path, currentLength + i
+								* tw, adj1, mTextPaint);
+					}
+				} else {
+					canvas.drawTextOnPath(sText, path, currentLength, adj1,
+							mTextPaint);
+				}
+
+				if (!adjustTextPosition) {
+					pm.getPosTan(currentLength, dt, null);
+					canvas.drawCircle(dt[0], dt[1], 4, mDotPaint);
+				}
+			}
 			canvas.translate(-PADX, -PADX);
-			// }
+
 			if (isRainbow) {
 				canvas.translate(PADX, PADX);
 				canvas.drawLine(mCenterRainbowX - PADX, mCenterRainbowY,
@@ -872,7 +955,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 						2 * (mCenterRainbowY - mBitmapHeight / 4.f), 5, mPaint);
 				canvas.translate(-PADX, -PADX);
 			}
-
 			canvas.drawRect(PADX, PADX, mBckgrWidth - PADX,
 					mBckgrHeight - PADX, mPaint5);
 		}
@@ -887,6 +969,14 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 					SettingsDialog.sMode2, SettingsDialog.sStrokeWidth);
 		}
 
+		private void updateTextBounds() {
+			Rect bounds = new Rect();
+			mTextPaint
+					.getTextBounds(sText + ".", 0, sText.length() + 1, bounds);
+			tw = bounds.right;
+			adj1 = -(bounds.bottom + bounds.top) / 2;
+		}
+
 		@Override
 		public boolean onTouchEvent(MotionEvent event) {
 			int action = event.getActionMasked();
@@ -895,6 +985,11 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			if (action != MotionEvent.ACTION_MOVE) {
 				if (action == MotionEvent.ACTION_DOWN) {
 					touch_start(event.getX(0), event.getY(0));
+					return true;
+				} else if (adjustTextPosition
+						&& action == MotionEvent.ACTION_UP) {
+					adjustTextPosition = false;
+					invalidate();
 					return true;
 				}
 				if (action == MotionEvent.ACTION_POINTER_DOWN) {
@@ -939,6 +1034,20 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 						2 * (mCenterRainbowY - mBitmapHeight / 4.f), mColors,
 						null);
 				mPaint.setShader(s);
+			} else if (adjustTextPosition) {
+				float dx = (x - mX);
+				float dy = (y - mY);
+				if (x > mBckgrWidth / 2 + PADX)
+					dy = -dy;
+				if (y < mBckgrHeight / 2 + PADX)
+					dx = -dx;
+				currentLength += dx + dy;
+				if (currentLength > pathLength)
+					currentLength = 0;
+				else if (currentLength < 0)
+					currentLength = pathLength;
+				mX = x;
+				mY = y;
 			} else {
 				float dx = x - mX;
 				float dy = y - mY;
@@ -966,6 +1075,14 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 					adjustRainbow = true;
 				} else {
 					adjustRainbow = false;
+				}
+			}
+			if (shouldDrawText) {
+				if (Math.abs(x - dt[0] - PADX) < 20
+						&& Math.abs(y - dt[1] - PADX) < 20) {
+					adjustTextPosition = true;
+				} else {
+					adjustTextPosition = false;
 				}
 			}
 		}
@@ -1016,6 +1133,13 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			}
 		};
 
+		mTextPaint = new Paint() {
+			{
+				setAntiAlias(true);
+				setTextSize(sStrokeWidth);
+			}
+		};
+
 		mBitmapPaint = new Paint(Paint.DITHER_FLAG);
 
 		mFilenameFilter = new FilenameFilter() {
@@ -1040,6 +1164,9 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		String folder_name = new File(sInputPath).getName();
 		sOutputPath = new File(sInputPath, folder_name + "-Framed").getPath();
 
+		String sfont = preferences.getString(Prefs.KEY_FONT, "");
+		setTypeface(sfont);
+
 		setContentView(R.layout.main);
 		mv = new UFrameView(this);
 		FrameLayout mFrame = (FrameLayout) findViewById(R.id.frame);
@@ -1050,6 +1177,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				FrameLayout.LayoutParams.WRAP_CONTENT,
 				FrameLayout.LayoutParams.WRAP_CONTENT);
 		updateInfo();
+		if (sText.length() == 0)
+			sText = getString(R.string.edit_text);
 		mFrame.addView(mv);
 		mFrame.addView(sInfo, lp);
 	}
@@ -1075,6 +1204,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		case R.id.input:
 			Intent intent2 = new Intent(getBaseContext(), FileDialog.class);
 			intent2.putExtra(FileDialog.START_PATH, sInputPath);
+			intent2.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
 			intent2.putExtra(FileDialog.CAN_SELECT_DIR, true);
 			startActivityForResult(intent2, SELECT_FOLDER);
 			break;
@@ -1198,6 +1328,33 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				mv.invalidate();
 			}
 			break;
+		case R.id.should_draw_text:
+			item.setChecked(shouldDrawText = !shouldDrawText);
+			mv.invalidate();
+			break;
+		case R.id.fill_with_text:
+			item.setChecked(fillWithText = !fillWithText);
+			mv.invalidate();
+			break;
+		case R.id.edit_text:
+			final EditText input = new EditText(this);
+			input.setText(sText);
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.edit_text)
+					// .setMessage(R.string.edit_text)
+					.setView(input)
+					.setPositiveButton(android.R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									sText = input.getText().toString();
+									if (sText.length() == 0)
+										shouldDrawText = false;
+									mv.invalidate();
+								}
+							}).setNegativeButton(android.R.string.no, null)
+					.show();
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -1212,6 +1369,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		menu.findItem(R.id.circle).setChecked(isCircle);
 		menu.findItem(R.id.postmark).setEnabled(
 				!isCircle && !mustFit && (mStartX != 0 || mStartY != 0));
+		menu.findItem(R.id.should_draw_text).setChecked(shouldDrawText);
+		menu.findItem(R.id.fill_with_text).setChecked(fillWithText);
+		menu.findItem(R.id.fill_with_text).setEnabled(shouldDrawText);
+		menu.findItem(R.id.edit_text).setEnabled(shouldDrawText);
 		return true;
 	}
 
@@ -1223,6 +1384,10 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 				getString(R.string.default_save_format));
 		isJPG = !ext.equals("PNG");
 		mBackgroundColor = preferences.getInt("background_color", 0xFFFFFFFF);
+		mTextPaint.setColor(mBackgroundColor);
+		if (font != null)
+			mTextPaint.setTypeface(font);
+		mv.updateTextBounds();
 	}
 
 	@Override
@@ -1253,6 +1418,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 		}
 		if (strokewidth != -1) {
 			mPaint.setStrokeWidth(strokewidth);
+			mTextPaint.setTextSize(strokewidth);
+			mv.updateTextBounds();
 			if (strokewidth != 0)
 				mBlur = new BlurMaskFilter(strokewidth,
 						BlurMaskFilter.Blur.NORMAL);

@@ -1,5 +1,6 @@
 <resources>
 
+    <string name="add_text">Текст</string>
     <string name="app_name">UFrame</string>
     <string name="are_you_sure_remove">"Уверены что хотите удалить картинки из "</string>
     <string name="are_you_sure_remove_last">"Удалить последние картинки из "</string>
@@ -16,6 +17,7 @@
     <string name="darkness">"Темнота "</string>
     <string name="dir_doesnt_exist">выходной папки ещё нет</string>
     <string name="double_tap">Шкаль насыщенность (2-касание)</string>
+    <string name="edit_text">Измени текст</string>
     <string name="emboss">Чеканка</string>
     <string name="error">ошибка</string>
     <string name="error_copying_exif">"(ошибка при записи EXIF) "</string>
@@ -23,7 +25,10 @@
     <string name="exists">пропускаю (уже есть)</string>
     <string name="file_name">Имя папки</string>
     <string name="files_were_deleted">" файлов удалено"</string>
+    <string name="fill_with_text">Заполни текстом</string>
     <string name="fit">Подгон</string>
+    <string name="font">Шрифт</string>
+    <string name="font_select">Выберите шрифт</string>
     <string name="help">Меняйте ширину и высоту волн 1-касанием, форму волн 2-касанием, ширину и высоту рамки 3-касанием (при отключенном подгоне)\n</string>
     <string name="input_folder">Вход</string>
     <string name="input">Вход</string>
@@ -59,6 +64,7 @@
     <string name="stop">Остановись</string>
     <string name="stopped">остановлено</string>
     <string name="success">UFrame: успех</string>
+    <string name="text">Текст</string>
     <string name="tool">Инструмент</string>
     <string name="transparency">"Прозрачность "</string>
     <string name="width">"Ширина "</string>
