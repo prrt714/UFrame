@@ -1348,6 +1348,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 									sText = input.getText().toString();
+									mv.updateTextBounds();
 									if (sText.length() == 0)
 										shouldDrawText = false;
 									mv.invalidate();
