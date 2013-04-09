@@ -17,7 +17,7 @@ public class SingleMediaScanner implements MediaScannerConnectionClient {
 	private final File mFile;
 	private Context mContext;
 	private final boolean isDir;
-	//private volatile int i = 0;
+	// private volatile int i = 0;
 	private int j;
 	static Uri sUri;
 

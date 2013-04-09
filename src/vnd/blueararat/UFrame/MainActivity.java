@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -228,8 +229,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 		private void lUpdateTextBounds() {
 			Rect bounds = new Rect();
-			lTextPaint
-					.getTextBounds(sText + ".", 0, sText.length() + 1, bounds);
+			lTextPaint.getTextBounds(sText + "...", 0, sText.length() + 3,
+					bounds);
 			ltw = bounds.right;
 			ladj1 = -(bounds.bottom + bounds.top) / 2;
 		}
@@ -362,15 +363,30 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 			return path;
 		}
 
-		private Bitmap drawIntoBitmap(Bitmap bitmap) {
+		private Bitmap drawIntoBitmap(String filePath) {
 			Bitmap.Config g;
 			if (isPNG) { // && bitmap.hasAlpha()
 				g = Bitmap.Config.ARGB_8888;
 			} else {
 				g = Bitmap.Config.RGB_565;
 			}
-			Bitmap bitmap2 = Bitmap.createBitmap(bitmap.getWidth(),
-					bitmap.getHeight(), g);
+			boolean b = true;
+			Options opts = new Options();
+			Bitmap bitmap = null;
+			Bitmap bitmap2 = null;
+			while (b) {
+				try {
+					bitmap = BitmapFactory.decodeFile(filePath, opts);
+					bitmap2 = Bitmap.createBitmap(bitmap.getWidth(),
+							bitmap.getHeight(), g);
+					b = false;
+				} catch (OutOfMemoryError e) {
+					opts.inSampleSize++;
+					bitmap = null;
+					bitmap2 = null;
+					System.gc();
+				}
+			}
 			Canvas canvas = new Canvas(bitmap2);
 			if (!isPNG)
 				canvas.drawColor(lBackgroundColor);
@@ -474,6 +490,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 						}
 					}
 
+					System.gc();
 					String str1 = exportImage(file, filename);
 					i++;
 					publishProgress(i + getString(R.string.of) + j + ": "
@@ -505,23 +522,24 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 			File file = new File(directory, filename);
 			if (file.exists()) {
-				try {
-					Thread.sleep(30);
-				} catch (InterruptedException e) {
-					// e.printStackTrace();
-				}
+				// try {
+				// Thread.sleep(15);
+				// } catch (InterruptedException e) {
+				// // e.printStackTrace();
+				// }
 				return skip;
 			}
 
-			Bitmap bitmap = drawIntoBitmap(BitmapFactory.decodeFile(file1
-					.getAbsolutePath()));// , opts
+			Bitmap bitmap = drawIntoBitmap(file1.getAbsolutePath());// , opts
 
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			bitmap.compress(mCf, mQ, stream);
-			byte[] byteArray = stream.toByteArray();
-			stream = null;
 			bitmap.recycle();
 			System.gc();
+
+			byte[] byteArray = stream.toByteArray();
+			stream = null;
+
 			BufferedOutputStream out = null;
 			try {
 				out = new BufferedOutputStream(new FileOutputStream(file));
@@ -971,8 +989,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
 		private void updateTextBounds() {
 			Rect bounds = new Rect();
-			mTextPaint
-					.getTextBounds(sText + ".", 0, sText.length() + 1, bounds);
+			mTextPaint.getTextBounds(sText + "...", 0, sText.length() + 3,
+					bounds);
 			tw = bounds.right;
 			adj1 = -(bounds.bottom + bounds.top) / 2;
 		}
