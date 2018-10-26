@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/color"
-        android:showAsAction="always"
-        android:title="@string/color"></item>
+        android:title="@string/color"
+        app:showAsAction="always"></item>
     <item
         android:id="@+id/input"
-        android:showAsAction="always"
-        android:title="@string/input"></item>
+        android:title="@string/input"
+        app:showAsAction="always"></item>
     <item
         android:id="@+id/run"
-        android:showAsAction="always"
-        android:title="@string/run"></item>
+        android:title="@string/run"
+        app:showAsAction="always"></item>
     <item
         android:id="@+id/open"
-        android:showAsAction="ifRoom"
-        android:title="@string/open"></item>
+        android:title="@string/open"
+        app:showAsAction="ifRoom"></item>
     <item
         android:id="@+id/remove"
         android:title="@string/remove"></item>
@@ -34,10 +35,12 @@
         android:id="@+id/circle"
         android:checkable="true"
         android:title="@string/circle"></item>
+<!--
     <item
         android:id="@+id/exif"
         android:checkable="true"
         android:title="@string/exif"></item>
+-->
     <item
         android:id="@+id/should_draw_text"
         android:checkable="true"

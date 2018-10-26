@@ -1,7 +1,7 @@
 <resources>
 
-    <style name="AppTheme" parent="android:Theme.Black.NoTitleBar" />
+    <style name="AppTheme" parent="@style/Theme.AppCompat.DayNight.DarkActionBar"/>
 
-    <style name="PrefTheme" parent="android:Theme.Black.NoTitleBar" />
+    <style name="PrefTheme" parent="@style/Theme.AppCompat.NoActionBar" />
 
 </resources>

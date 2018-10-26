@@ -1,7 +1,6 @@
 package vnd.blueararat.UFrame;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -36,6 +35,8 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -56,7 +57,7 @@ import java.io.IOException;
 
 import vnd.blueararat.UFrame.SettingsDialog.OnSettingsChangedListener;
 
-public class MainActivity extends Activity implements OnSettingsChangedListener {
+public class MainActivity extends AppCompatActivity implements OnSettingsChangedListener {
 
     private Paint mPaint, mPaint5, mBitmapPaint, mTextPaint;
     private MaskFilter mEmboss;
@@ -84,6 +85,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
     private final static int PADX2 = 2 * PADX;
     private static boolean isJPG;
     private static int mBackgroundColor;
+    private static int mFontColor;
     private SharedPreferences preferences;
     int[] mColors = new int[]{0xFFFF0000, 0xFFFF00FF, 0xFF0000FF, 0xFF00FFFF,
             0xFF00FF00, 0xFFFFFF00, 0xFFFF0000};
@@ -94,18 +96,22 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
     private static volatile boolean isRunning = false;
     private float mDx, mDy;
     private float mStartX, mStartY, mSmooth;
-    private static boolean mustRetainExif = true;
+    private static boolean mustRetainExif = false;
     private static boolean isCircle = false;
     private int mNumWaves;
     private static long lastTime = System.currentTimeMillis();
-    private static boolean shouldDrawText = true;
+    private static boolean shouldDrawText = false;
     private float[] dt = new float[]{0, 0};
     private boolean adjustTextPosition = false;
     private float pathLength = 0;
     private float currentLength = 0;
     private static String sText = "";
-    private static boolean fillWithText = true;
+    private static boolean fillWithText = false;
     private static Typeface font;
+
+    static {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+    }
 
     static void setTypeface(String path) {
         if (path == null || path.length() == 0) {
@@ -215,6 +221,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
         private final boolean lFit = mustFit;
         private final boolean isPNG = !isJPG;
         private final int lBackgroundColor = mBackgroundColor;
+        private final int lFontColor = mFontColor;
         private final boolean lExif = mustRetainExif;
         private ExifInterface exif;
         private final boolean lCircle = isCircle;
@@ -775,9 +782,6 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
 
         @Override
         protected void onPostExecute(String result) {
-            sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
-                    Uri.parse("file://"
-                            + Environment.getExternalStorageDirectory())));
             Toast.makeText(ma, result, Toast.LENGTH_SHORT).show();
         }
     }
@@ -921,7 +925,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
         protected void onDraw(Canvas canvas) {
 
             Bitmap bitmap = Bitmap.createBitmap(mBitmapWidth, mBitmapHeight,
-                    Bitmap.Config.RGB_565);
+                    isJPG ? Bitmap.Config.RGB_565 : Bitmap.Config.ARGB_8888);
             Canvas canvas2 = new Canvas(bitmap);
             if (isJPG)
                 canvas2.drawColor(mBackgroundColor);
@@ -949,7 +953,7 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
                 PathMeasure pm = new PathMeasure(path, true);
                 pathLength = pm.getLength();
 
-                if (fillWithText) {
+                if (fillWithText && tw > 0) {
                     int count = (int) pathLength / tw;
                     for (int i = 0; i < count; i++) {
                         canvas.drawTextOnPath(sText, path, currentLength + i
@@ -1335,9 +1339,9 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
                                 }).setNegativeButton(android.R.string.no, null)
                         .show();
                 break;
-            case R.id.exif:
-                item.setChecked(mustRetainExif = !mustRetainExif);
-                break;
+//            case R.id.exif:
+//                item.setChecked(mustRetainExif = !mustRetainExif);
+//                break;
             case R.id.stop:
                 mustStop = true;
                 break;
@@ -1392,8 +1396,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.exif).setEnabled(isJPG);
-        menu.findItem(R.id.exif).setChecked(mustRetainExif);
+//        menu.findItem(R.id.exif).setEnabled(isJPG);
+//        menu.findItem(R.id.exif).setChecked(mustRetainExif);
         menu.findItem(R.id.stop).setEnabled(isRunning);
         menu.findItem(R.id.fit).setChecked(mustFit);
         menu.findItem(R.id.circle).setChecked(isCircle);
@@ -1414,7 +1418,8 @@ public class MainActivity extends Activity implements OnSettingsChangedListener 
                 getString(R.string.default_save_format));
         isJPG = !ext.equals("PNG");
         mBackgroundColor = preferences.getInt("background_color", 0xFFFFFFFF);
-        mTextPaint.setColor(mBackgroundColor);
+        mFontColor = preferences.getInt("font_color", mBackgroundColor);
+        mTextPaint.setColor(mFontColor);
         if (font != null)
             mTextPaint.setTypeface(font);
         mv.updateTextBounds();

@@ -3,14 +3,11 @@ package vnd.blueararat.UFrame;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
-import android.widget.Toast;
 
 import java.io.File;
 
@@ -21,7 +18,7 @@ public class Prefs extends PreferenceActivity implements
     static final String KEY_FONT = "font";
     static final int SELECT_FILE = 1;
     private SeekbarPref mSeekbarPrefJ;
-    private ColorPref mColorPref;
+    private ColorPref mBackgroundColorPref;
     private ListPreference mSaveFormat;
     private FontPref mPrefFont;
 
@@ -35,8 +32,8 @@ public class Prefs extends PreferenceActivity implements
                 + mSaveFormat.getValue());
         boolean b = mSaveFormat.getValue().equals("JPEG");
         mSeekbarPrefJ.setEnabled(b);
-        mColorPref = (ColorPref) findPreference("background_color");
-        mColorPref.setEnabled(b);
+        mBackgroundColorPref = (ColorPref) findPreference("background_color");
+        mBackgroundColorPref.setEnabled(b);
 //        Preference media_scanner = findPreference("media_scanner");
 //        media_scanner
 //                .setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -123,7 +120,7 @@ public class Prefs extends PreferenceActivity implements
         if (arg1.equals("format")) {
             boolean b = mSaveFormat.getValue().equals("JPEG");
             mSeekbarPrefJ.setEnabled(b);
-            mColorPref.setEnabled(b);
+            mBackgroundColorPref.setEnabled(b);
             mSaveFormat.setSummary(getString(R.string.pictures_will_be_saved)
                     + " " + mSaveFormat.getValue());
         }

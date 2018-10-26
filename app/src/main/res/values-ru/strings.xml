@@ -6,6 +6,7 @@
     <string name="are_you_sure_remove_last">"Удалить последние картинки из "</string>
     <string name="are_you_sure_run">"Уверены что хотите обрамить картинки в каталоге "</string>
     <string name="background">Цвет фона</string>
+    <string name="font_color">Цвет шрифта</string>
     <string name="blur">Размытие</string>
     <string name="cant_read_folder">папку нельзя читать!</string>
     <string name="cant_save_picture_to">Не могу сохранить картинки в</string>

@@ -35,7 +35,7 @@ public class SettingsDialog extends Dialog {
     static final int NONE = 2;
     static int sMode1 = NORMAL;
     static int sMode2 = COLOR;
-    static float sStrokeWidth = 4;
+    static float sStrokeWidth = 10;
 
     public SettingsDialog(Context context, OnSettingsChangedListener listener,
                           int initialColor) {
@@ -96,7 +96,7 @@ public class SettingsDialog extends Dialog {
 
             }
         });
-        if (sStrokeWidth > 20) {
+        if (sStrokeWidth > sb.getMax()) {
             sb.setMax((int) sStrokeWidth);
         }
         sb.setProgress((int) sStrokeWidth);

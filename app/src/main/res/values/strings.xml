@@ -6,6 +6,7 @@
     <string name="are_you_sure_remove_last">"Remove last pictures from "</string>
     <string name="are_you_sure_run">"Are you sure you want to frame pictures located at "</string>
     <string name="background">Background color</string>
+    <string name="font_color">Font color</string>
     <string name="blur">Blur</string>
     <string name="cant_read_folder">folder can\'t be read!</string>
     <string name="cant_save_picture_to">Can\'t save picture to</string>
