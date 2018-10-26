@@ -25,12 +25,14 @@
             android:title="@string/background"
             android:widgetLayout="@layout/color_widget" />
     </PreferenceCategory>
+<!--
     <PreferenceCategory android:title="@string/tool">
         <Preference
             android:key="media_scanner"
             android:summary="@string/media_scanner_desc"
             android:title="@string/media_scanner" />
     </PreferenceCategory>
+-->
     <PreferenceCategory android:title="@string/text">
         <vnd.blueararat.UFrame.FontPref
             android:key="font"

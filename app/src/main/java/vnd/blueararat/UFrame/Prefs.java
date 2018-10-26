@@ -37,14 +37,14 @@ public class Prefs extends PreferenceActivity implements
         mSeekbarPrefJ.setEnabled(b);
         mColorPref = (ColorPref) findPreference("background_color");
         mColorPref.setEnabled(b);
-        Preference media_scanner = findPreference("media_scanner");
-        media_scanner
-                .setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                    public boolean onPreferenceClick(Preference preference) {
-                        searchMedia();
-                        return true;
-                    }
-                });
+//        Preference media_scanner = findPreference("media_scanner");
+//        media_scanner
+//                .setOnPreferenceClickListener(new OnPreferenceClickListener() {
+//                    public boolean onPreferenceClick(Preference preference) {
+//                        searchMedia();
+//                        return true;
+//                    }
+//                });
         mPrefFont = (FontPref) findPreference(KEY_FONT);
         mPrefFont.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
@@ -89,12 +89,12 @@ public class Prefs extends PreferenceActivity implements
         }
     }
 
-    private void searchMedia() {
-        sendBroadcast(new Intent(
-                Intent.ACTION_MEDIA_MOUNTED,
-                Uri.parse("file://" + Environment.getExternalStorageDirectory())));
-        Toast.makeText(this, R.string.media_scanning, Toast.LENGTH_LONG).show();
-    }
+//    private void searchMedia() {
+//        sendBroadcast(new Intent(
+//                Intent.ACTION_MEDIA_MOUNTED,
+//                Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+//        Toast.makeText(this, R.string.media_scanning, Toast.LENGTH_LONG).show();
+//    }
 
     @Override
     protected void onResume() {
