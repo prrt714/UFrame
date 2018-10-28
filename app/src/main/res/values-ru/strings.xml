@@ -69,5 +69,6 @@
     <string name="tool">Инструмент</string>
     <string name="transparency">"Прозрачность "</string>
     <string name="width">"Ширина "</string>
+    <string name="straighten">Выпрями</string>
 
 </resources>

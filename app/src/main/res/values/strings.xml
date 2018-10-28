@@ -69,5 +69,6 @@
     <string name="tool">Tool</string>
     <string name="transparency">"Transparency "</string>
     <string name="width">"Width "</string>
+    <string name="straighten">Straighten</string>
 
 </resources>

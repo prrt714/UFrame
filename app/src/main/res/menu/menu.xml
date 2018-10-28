@@ -32,6 +32,9 @@
         android:id="@+id/postmark"
         android:title="@string/postmark"></item>
     <item
+        android:id="@+id/straighten"
+        android:title="@string/straighten"></item>
+    <item
         android:id="@+id/circle"
         android:checkable="true"
         android:title="@string/circle"></item>

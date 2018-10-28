@@ -24,12 +24,6 @@
             android:key="background_color"
             android:title="@string/background"
             android:widgetLayout="@layout/color_widget" />
-
-        <vnd.blueararat.UFrame.ColorPref
-            android:dialogLayout="@layout/color_pref_dialog"
-            android:key="font_color"
-            android:title="@string/font_color"
-            android:widgetLayout="@layout/color_widget" />
     </PreferenceCategory>
 <!--
     <PreferenceCategory android:title="@string/tool">
@@ -44,6 +38,11 @@
             android:key="font"
             android:summary="@string/font_select"
             android:title="@string/font" />
+        <vnd.blueararat.UFrame.ColorPref
+            android:dialogLayout="@layout/color_pref_dialog"
+            android:key="font_color"
+            android:title="@string/font_color"
+            android:widgetLayout="@layout/color_widget" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -1361,6 +1361,10 @@ public class MainActivity extends AppCompatActivity implements OnSettingsChanged
                     mv.invalidate();
                 }
                 break;
+            case R.id.straighten:
+                mStartX = mStartY = mSmooth = mDx = 0;
+                mv.invalidate();
+                break;
             case R.id.should_draw_text:
                 item.setChecked(shouldDrawText = !shouldDrawText);
                 mv.invalidate();
